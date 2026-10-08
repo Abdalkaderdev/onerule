@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 export const CONFIG = "onerule.json";
@@ -89,7 +89,11 @@ export function plan(root: string, config: Config = loadConfig(root), text = rea
 }
 
 export function apply(root: string, plans: Plan[], force = false) {
-  for (const p of plans) if (p.state !== "ok" && (p.state !== "conflict" || force)) write(root, p.target.file, p.content);
+  for (const p of plans) {
+    if (p.state === "ok" || (p.state === "conflict" && !force)) continue;
+    rmSync(join(root, p.target.file), { force: true });
+    write(root, p.target.file, p.content);
+  }
 }
 
 export type Init = { config: Config; text: string; created: boolean; merged: string[] };

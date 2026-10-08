@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, linkSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { beforeEach, test } from "node:test";
@@ -108,4 +108,12 @@ test("bad config and missing source are errors", () => {
   assert.throws(() => cli("status"), /unknown target "nope"/);
   put("onerule.json", '{"source":"CLAUDE.md","targets":["claude"]}');
   assert.throws(() => cli("status"), /is the source file/);
+});
+
+test("a target hard-linked to the source is replaced, not written through", () => {
+  put("AGENTS.md", "# Big rules\n\nlots of content\n");
+  linkSync(join(root, "AGENTS.md"), join(root, "CLAUDE.md"));
+  cli("init", "--apply");
+  assert.equal(get("AGENTS.md"), "# Big rules\n\nlots of content\n");
+  assert.equal(get("CLAUDE.md"), "@AGENTS.md\n");
 });
