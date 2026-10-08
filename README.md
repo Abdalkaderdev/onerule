@@ -46,7 +46,7 @@ The difference is the approach, not the feature count:
 - `status` shows every target and how it's wired
 - Generated copies carry a "do not edit" header naming the source
 - CRLF checkouts don't count as drift
-- No runtime dependencies, one optional 4-line config file
+- No runtime dependencies, one optional config file
 
 ## Quick start
 
