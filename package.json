@@ -1,8 +1,18 @@
 {
   "name": "onerule",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Keep CLAUDE.md, AGENTS.md, GEMINI.md, Cursor rules and Copilot instructions in sync from one file",
-  "keywords": ["agents-md", "claude-md", "gemini-md", "cursor-rules", "copilot-instructions", "claude-code", "codex", "gemini-cli", "cli"],
+  "keywords": [
+    "agents-md",
+    "claude-md",
+    "gemini-md",
+    "cursor-rules",
+    "copilot-instructions",
+    "claude-code",
+    "codex",
+    "gemini-cli",
+    "cli"
+  ],
   "license": "MIT",
   "author": "abdalkaderdev",
   "repository": {
@@ -15,7 +25,9 @@
   "bin": {
     "onerule": "dist/bin.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=22"
   },
