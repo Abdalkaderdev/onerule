@@ -19,7 +19,7 @@ export const TARGETS: Target[] = [
 
 const ROOT_FILES = ["AGENTS.md", "CLAUDE.md", "GEMINI.md", ".github/copilot-instructions.md"];
 
-export const lf = (s: string) => s.replace(/\r\n/g, "\n");
+export const lf = (s: string) => s.replace(/^﻿/, "").replace(/\r\n/g, "\n");
 
 const linesOf = (s: string) => s.split("\n").map((l) => l.trim()).filter(Boolean);
 

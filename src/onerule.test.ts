@@ -129,3 +129,12 @@ test("hand-written lines that are only a substring of the source are kept", () =
   assert.match(get("AGENTS.md"), /^Never commit$/m);
 });
 
+
+test("BOM in config and files is ignored", () => {
+  put("AGENTS.md", "﻿a\n");
+  put("onerule.json", '﻿{"source":"AGENTS.md","targets":["copilot"]}');
+  cli("sync", "--apply");
+  assert.doesNotMatch(get(".github/copilot-instructions.md"), /﻿/);
+  put(".github/copilot-instructions.md", `﻿${get(".github/copilot-instructions.md")}`);
+  assert.equal(cli("check").code, 0);
+});
