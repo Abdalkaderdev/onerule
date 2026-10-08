@@ -21,6 +21,13 @@ const ROOT_FILES = ["AGENTS.md", "CLAUDE.md", "GEMINI.md", ".github/copilot-inst
 
 export const lf = (s: string) => s.replace(/\r\n/g, "\n");
 
+const linesOf = (s: string) => s.split("\n").map((l) => l.trim()).filter(Boolean);
+
+function covered(text: string, body: string): boolean {
+  const have = new Set(linesOf(text));
+  return linesOf(body).every((l) => have.has(l));
+}
+
 export function read(root: string, file: string): string | undefined {
   const path = join(root, file);
   return existsSync(path) ? lf(readFileSync(path, "utf8")) : undefined;
@@ -75,7 +82,7 @@ function planOne(root: string, target: Target, source: string, text: string): Pl
     const line = target.pointer(source);
     if (have.split("\n").some((l) => l.trim() === line)) return { target, state: "ok", content: have, note: `imports ${source}` };
     const body = have.trim();
-    if (!body || body.includes(MARK) || text.includes(body)) return { target, state: "drifted", content: want, note: `content already in ${source}, replace with ${line}` };
+    if (!body || body.includes(MARK) || covered(text, body)) return { target, state: "drifted", content: want, note: `content already in ${source}, replace with ${line}` };
     return { target, state: "drifted", content: `${line}\n\n${have}`, note: `add ${line}, keep existing content` };
   }
   if (have === want) return { target, state: "ok", content: have, note: `copy of ${source}` };
@@ -108,7 +115,7 @@ export function init(root: string, source = "AGENTS.md", targets?: string[]): In
     if (raw === undefined || raw.includes(MARK)) continue;
     const body = raw.split("\n").filter((l) => !pointers.includes(l.trim())).join("\n").trim();
     merged.push(file);
-    if (!body || text.includes(body)) continue;
+    if (!body || covered(text, body)) continue;
     text = text.trim() ? `${text.trimEnd()}\n\n## From ${file}\n\n${body}\n` : `${body}\n`;
   }
   if (!text.trim()) text = "# Agent instructions\n\nBuild, test and style rules for coding agents working in this repo.\n";

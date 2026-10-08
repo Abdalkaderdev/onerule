@@ -117,3 +117,15 @@ test("a target hard-linked to the source is replaced, not written through", () =
   assert.equal(get("AGENTS.md"), "# Big rules\n\nlots of content\n");
   assert.equal(get("CLAUDE.md"), "@AGENTS.md\n");
 });
+
+test("hand-written lines that are only a substring of the source are kept", () => {
+  put("AGENTS.md", "Never commit to main without review.\n");
+  put("CLAUDE.md", "Never commit\n");
+  cli("sync", "--apply");
+  assert.match(get("CLAUDE.md"), /^@AGENTS\.md\n[\s\S]*Never commit\n$/);
+  rmSync(join(root, "onerule.json"), { force: true });
+  put("CLAUDE.md", "Never commit\n");
+  cli("init", "--apply");
+  assert.match(get("AGENTS.md"), /^Never commit$/m);
+});
+
