@@ -138,3 +138,12 @@ test("BOM in config and files is ignored", () => {
   put(".github/copilot-instructions.md", `﻿${get(".github/copilot-instructions.md")}`);
   assert.equal(cli("check").code, 0);
 });
+
+test("config must be an object and source must stay inside the repo", () => {
+  put("onerule.json", "null");
+  assert.throws(() => cli("status"), /onerule\.json: "source" must be a string/);
+  put("onerule.json", '{"source":"../secret.txt"}');
+  assert.throws(() => cli("status"), /inside the repo/);
+  rmSync(join(root, "onerule.json"));
+  assert.throws(() => cli("init", "--source", "../x.md"), /inside the repo/);
+});

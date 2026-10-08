@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, isAbsolute, join, normalize } from "node:path";
 
 export const CONFIG = "onerule.json";
 export const MARK = "<!-- onerule: generated from";
@@ -50,6 +50,10 @@ export function defaultTargets(root: string, source: string): string[] {
   return TARGETS.filter((t) => t.file !== source && (t.id !== "cursor" || cursor)).map((t) => t.id);
 }
 
+function checkSource(source: string) {
+  if (isAbsolute(source) || normalize(source).split(/[\\/]/)[0] === "..") throw new Error(`source "${source}" must be a path inside the repo`);
+}
+
 export function loadConfig(root: string): Config {
   const raw = read(root, CONFIG);
   if (raw === undefined) return { source: "AGENTS.md", targets: defaultTargets(root, "AGENTS.md") };
@@ -59,9 +63,12 @@ export function loadConfig(root: string): Config {
   } catch (e) {
     throw new Error(`${CONFIG}: ${(e as Error).message}`);
   }
+  const shape = `${CONFIG}: "source" must be a string and "targets" an array`;
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) throw new Error(shape);
   const source = parsed.source ?? "AGENTS.md";
   const targets = parsed.targets ?? defaultTargets(root, source);
-  if (typeof source !== "string" || !Array.isArray(targets)) throw new Error(`${CONFIG}: "source" must be a string and "targets" an array`);
+  if (typeof source !== "string" || !Array.isArray(targets)) throw new Error(shape);
+  checkSource(source);
   for (const id of targets) if (getTarget(id).file === source) throw new Error(`${CONFIG}: target "${id}" is the source file`);
   return { source, targets };
 }
@@ -106,6 +113,7 @@ export function apply(root: string, plans: Plan[], force = false) {
 export type Init = { config: Config; text: string; created: boolean; merged: string[] };
 
 export function init(root: string, source = "AGENTS.md", targets?: string[]): Init {
+  checkSource(source);
   const pointers = TARGETS.flatMap((t) => (t.pointer ? [t.pointer(source)] : []));
   const existing = read(root, source);
   let text = existing ?? "";
